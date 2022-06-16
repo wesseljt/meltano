@@ -41,7 +41,6 @@ class ProjectSettingsService(SettingsService):
 
         self.env_override = {
             **self.project.env,
-            **self.config_service.env,
             **self.env_override,
         }
 
@@ -127,6 +126,16 @@ class ProjectSettingsService(SettingsService):
             Current environment configuration in `meltano.yml`
         """
         return self.config_service.current_environment_config
+
+    @property
+    def env(self):
+        """Return the project-level env vars.
+
+        Returns:
+            The environment variables at the project level, including os.environ,
+            env_overrides and the `env` key in `meltano.yml`.
+        """
+        return {**super().env, **self.meltano_yml_config.get("env", {})}
 
     def update_meltano_yml_config(self, config):
         """Update configuration in `meltano.yml`.

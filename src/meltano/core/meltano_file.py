@@ -23,7 +23,7 @@ class MeltanoFile(Canonical):
         schedules: List[dict] = None,
         environments: List[dict] = None,
         jobs: List[dict] = None,
-        env: Dict = None,
+        env: dict = None,
         **extras,
     ):
         """Construct a new MeltanoFile object from meltano.yml file.

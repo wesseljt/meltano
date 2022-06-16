@@ -39,7 +39,11 @@ class ProjectSettingsService(SettingsService):
 
         self.config_service = config_service or ConfigService(self.project)
 
-        self.env_override = {**self.project.env, **self.env_override}
+        self.env_override = {
+            **self.project.env,
+            **config_service.env,
+            **self.env_override,
+        }
 
         if self.project.active_environment:
             # Update this with `self.project.dotenv_env`, `self.env`, etc. to expand

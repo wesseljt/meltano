@@ -46,6 +46,7 @@ class PluginSettingsService(SettingsService):
             **project_settings_service.env,
             **project_settings_service.as_env(),
             **self.env_override,
+            **self.plugin.env,
             **self.plugin.info_env,
         }
 

@@ -103,6 +103,21 @@
         "$ref": "#/definitions/schedules"
       },
       "description": "Scheduled ELT jobs, added using 'meltano schedule'"
+    },
+    "env": {
+      "type": "object",
+      "description": "Mapping of Project-level environment variables for use in config.",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "type": "string"
+      },
+      "examples": [
+        {
+          "SNOWFLAKE_ACCOUNT": "my.snowflake.account.com"
+        }
+      ]
     }
   },
   "definitions": {
@@ -262,6 +277,21 @@
           },
           "requires": {
             "$ref": "#/definitions/requires"
+          },
+          "env": {
+            "type": "object",
+            "description": "Mapping of environment variables injected into plugins' runtime context.",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": "string"
+            },
+            "examples": [
+              {
+                "SNOWFLAKE_ACCOUNT": "my.snowflake.account.com"
+              }
+            ]
           }
         }
       },

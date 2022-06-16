@@ -1,6 +1,6 @@
 """Select Service."""
 import json
-from typing import TYPE_CHECKING
+from typing import List
 
 from meltano.core.plugin import PluginType
 from meltano.core.plugin.base import PluginRef
@@ -12,9 +12,6 @@ from meltano.core.plugin_invoker import invoker_factory
 from meltano.core.project_plugins_service import ProjectPluginsService
 
 from .project import Project
-
-if TYPE_CHECKING:
-    from typing import List
 
 
 class SelectService:

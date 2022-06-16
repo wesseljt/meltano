@@ -17,8 +17,8 @@ from meltano.core.logging.utils import SubprocessOutputWriter
 from .error import Error
 from .plugin import PluginRef
 from .plugin.config_service import PluginConfigService
+from .plugin.plugin_settings_service import PluginSettingsService
 from .plugin.project_plugin import ProjectPlugin
-from .plugin.settings_service import PluginSettingsService
 from .project import Project
 from .project_plugins_service import ProjectPluginsService
 from .venv_service import VenvService, VirtualEnv

@@ -10,7 +10,7 @@ from meltano.core.job import Job
 from meltano.core.logging.output_logger import OutputLogger
 from meltano.core.plugin import PluginRef, PluginType
 from meltano.core.plugin.error import PluginNotFoundError
-from meltano.core.plugin.settings_service import PluginSettingsService
+from meltano.core.plugin.plugin_settings_service import PluginSettingsService
 from meltano.core.plugin_invoker import PluginInvoker, invoker_factory
 from meltano.core.project import Project
 from meltano.core.project_plugins_service import ProjectPluginsService

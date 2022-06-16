@@ -1,17 +1,26 @@
+"""Transform Add Service."""
+
 import os
 from pathlib import Path
 from typing import Optional
 
 import yaml
 
+from .plugin.plugin_settings_service import PluginSettingsService
 from .plugin.project_plugin import ProjectPlugin
-from .plugin.settings_service import PluginSettingsService
 from .project import Project
 from .project_plugins_service import ProjectPluginsService
 
 
 class TransformAddService:
+    """Transform Add Service."""
+
     def __init__(self, project: Project):
+        """Instantiate TransformAddService instance.
+
+        Args:
+            project: Meltano Project instance.
+        """
         self.project = project
 
         self.plugins_service = ProjectPluginsService(project)
@@ -28,9 +37,16 @@ class TransformAddService:
         self.dbt_project_file = dbt_project_path.joinpath("dbt_project.yml")
 
     def add_to_packages(self, plugin: ProjectPlugin):
+        """Add package to packages file.
+
+        Args:
+            plugin: dbt plugin to use.
+
+        Raises:
+            ValueError: if missing pip url for transform plugin.
+        """
         if not os.path.exists(self.packages_file):
-            with open(self.packages_file, "w"):
-                pass
+            open(self.packages_file, "a").close()  # noqa: WPS515
 
         package_yaml = yaml.safe_load(self.packages_file.open()) or {"packages": []}
 
@@ -54,13 +70,18 @@ class TransformAddService:
             package_ref["revision"] = revision
         package_yaml["packages"].append(package_ref)
 
-        with open(self.packages_file, "w") as f:
-            f.write(yaml.dump(package_yaml, default_flow_style=False, sort_keys=False))
+        with open(self.packages_file, "w") as pkg_f:
+            pkg_f.write(
+                yaml.dump(package_yaml, default_flow_style=False, sort_keys=False)
+            )
 
     def update_dbt_project(self, plugin: ProjectPlugin):
         """Set transform package variables in `dbt_project.yml`.
 
         If not already present, the package name will also be added under dbt 'models'.
+
+        Args:
+            plugin: dbt plugin to use.
         """
         settings_service = PluginSettingsService(
             self.project, plugin, plugins_service=self.plugins_service
@@ -86,7 +107,7 @@ class TransformAddService:
         # Add the package's definition to the list of models:
         dbt_project_yaml["models"][package_name] = model_def
 
-        with open(self.dbt_project_file, "w") as f:
-            f.write(
+        with open(self.dbt_project_file, "w") as dbt_pf:
+            dbt_pf.write(
                 yaml.dump(dbt_project_yaml, default_flow_style=False, sort_keys=False)
             )

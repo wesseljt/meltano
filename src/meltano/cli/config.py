@@ -10,7 +10,7 @@ import dotenv
 from meltano.core.db import project_engine
 from meltano.core.plugin import PluginType
 from meltano.core.plugin.error import PluginNotFoundError
-from meltano.core.plugin.settings_service import PluginSettingsService
+from meltano.core.plugin.plugin_settings_service import PluginSettingsService
 from meltano.core.plugin_invoker import PluginInvoker
 from meltano.core.plugin_test_service import PluginTestServiceFactory
 from meltano.core.project import Project

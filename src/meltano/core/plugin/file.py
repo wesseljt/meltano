@@ -1,7 +1,10 @@
+"""File Plugin."""
+import click
+
 from meltano.core.behavior.hookable import hook
 from meltano.core.plugin import BasePlugin, PluginType
+from meltano.core.plugin.plugin_settings_service import PluginSettingsService
 from meltano.core.plugin.project_plugin import ProjectPlugin
-from meltano.core.plugin.settings_service import PluginSettingsService
 from meltano.core.plugin_install_service import (
     PluginInstallReason,
     PluginInstallService,
@@ -11,6 +14,8 @@ from meltano.core.venv_service import VirtualEnv
 
 
 class FilePlugin(BasePlugin):
+    """File Plugin."""
+
     __plugin_type__ = PluginType.FILES
 
     EXTRA_SETTINGS = [
@@ -20,12 +25,30 @@ class FilePlugin(BasePlugin):
     ]
 
     def is_invokable(self):
+        """Plugin invokable status.
+
+        Returns:
+            False
+        """
         return False
 
     def should_add_to_file(self):
-        return len(self.extras.get("update", [])) > 0
+        """Determine if plugin should add to (update) files.
+
+        Returns:
+            True if updates are required.
+        """
+        return bool(self.extras.get("update", []))
 
     def file_contents(self, project):
+        """Get file contents.
+
+        Args:
+            project: Meltano Project instance.
+
+        Returns:
+            A dictionary of form {path: content} with current project files contents.
+        """
         venv = VirtualEnv(project.plugin_dir(self, "venv"))
         bundle_dir = venv.site_packages_dir.joinpath("bundle")
 
@@ -38,6 +61,14 @@ class FilePlugin(BasePlugin):
         }
 
     def update_file_header(self, relative_path):
+        """File header content.
+
+        Args:
+            relative_path: Path to insert into header content.
+
+        Returns:
+            A list of strings representing line of header comments.
+        """
         return "\n".join(
             [
                 f"# This file is managed by the '{self.name}' {self.type.descriptor} and updated automatically when `meltano upgrade` is run.",
@@ -47,6 +78,16 @@ class FilePlugin(BasePlugin):
         )
 
     def project_file_contents(self, project, paths_to_update):
+        """Get project file contents.
+
+        Args:
+            project: Meltano Project instance.
+            paths_to_update: Paths to add header content to.
+
+        Returns:
+            A dictionary of form {path: content}.
+        """
+
         def with_update_header(content, relative_path):
             if str(relative_path) in paths_to_update:
                 content = "\n\n".join([self.update_file_header(relative_path), content])
@@ -59,6 +100,16 @@ class FilePlugin(BasePlugin):
         }
 
     def write_file(self, project, relative_path, content):
+        """Write file.
+
+        Args:
+            project: Meltano Project instance.
+            relative_path: Path to write to.
+            content: Content to write to path.
+
+        Returns:
+            Boolean, true if write was successful.
+        """
         project_path = project.root_dir(relative_path)
         if project_path.exists() and project_path.read_text() == content:
             return False
@@ -69,6 +120,15 @@ class FilePlugin(BasePlugin):
         return True
 
     def write_files(self, project, files_content):
+        """Write files.
+
+        Args:
+            project: Meltano Project instance.
+            files_content: A dictionary of form {path: content} to write.
+
+        Returns:
+            List of paths of written files.
+        """
         return [
             relative_path
             for relative_path, content in files_content.items()
@@ -76,11 +136,21 @@ class FilePlugin(BasePlugin):
         ]
 
     def files_to_create(self, project, paths_to_update):
+        """Determine files to create.
+
+        Args:
+            project: Meltano Project instance.
+            paths_to_update: Filter to specified paths.
+
+        Returns:
+            A dictionary of form {path: content} to write.
+        """
+
         def rename_if_exists(relative_path):
             if not project.root_dir(relative_path).exists():
                 return relative_path
 
-            print(f"File {relative_path} already exists, keeping both versions")
+            click.echo(f"File {relative_path} already exists, keeping both versions")
             return relative_path.with_name(
                 f"{relative_path.stem} ({self.name}){relative_path.suffix}"
             )
@@ -93,6 +163,15 @@ class FilePlugin(BasePlugin):
         }
 
     def files_to_update(self, project, paths_to_update):
+        """Determine files to update.
+
+        Args:
+            project: Meltano Project instance.
+            paths_to_update: Filter to specified paths.
+
+        Returns:
+            A dictionary of form {path: content} to write.
+        """
         return {
             relative_path: content
             for relative_path, content in self.project_file_contents(
@@ -101,11 +180,33 @@ class FilePlugin(BasePlugin):
             if str(relative_path) in paths_to_update
         }
 
-    def create_files(self, project, paths_to_update=[]):
-        return self.write_files(project, self.files_to_create(project, paths_to_update))
+    def create_files(self, project, paths_to_update=None):
+        """Create files.
 
-    def update_files(self, project, paths_to_update=[]):
-        return self.write_files(project, self.files_to_update(project, paths_to_update))
+        Args:
+            project: Meltano Project instance.
+            paths_to_update: (optional) paths to update.
+
+        Returns:
+            List of paths of written files.
+        """
+        return self.write_files(
+            project, self.files_to_create(project, paths_to_update or [])
+        )
+
+    def update_files(self, project, paths_to_update=None):
+        """Update files.
+
+        Args:
+            project: Meltano Project instance.
+            paths_to_update: (optional) paths to update.
+
+        Returns:
+            List of paths of written files.
+        """
+        return self.write_files(
+            project, self.files_to_update(project, paths_to_update or [])
+        )
 
     @hook("after_install")
     async def after_install(
@@ -114,7 +215,13 @@ class FilePlugin(BasePlugin):
         plugin: ProjectPlugin,
         reason: PluginInstallReason,
     ):
-        """Trigger after install tasks."""
+        """Trigger after install tasks.
+
+        Args:
+            installer: Plugin installer.
+            plugin: The plugin to install.
+            reason: Reason of install.
+        """
         project = installer.project
         plugins_service = installer.plugins_service
 
@@ -122,26 +229,24 @@ class FilePlugin(BasePlugin):
             project, plugin, plugins_service=plugins_service
         )
         update_config = plugin_settings_service.get("_update")
-        paths_to_update = [
-            path for path, to_update in update_config.items() if to_update
-        ]
+        paths_to_update = [pth for pth, to_update in update_config.items() if to_update]
 
         if reason is PluginInstallReason.ADD:
-            print(f"Adding '{plugin.name}' files to project...")
+            click.echo(f"Adding '{plugin.name}' files to project...")
 
-            for path in self.create_files(project, paths_to_update):
-                print(f"Created {path}")
+            for create_path in self.create_files(project, paths_to_update):
+                click.echo(f"Created {create_path}")
         elif reason is PluginInstallReason.UPGRADE:
-            print(f"Updating '{plugin.name}' files in project...")
+            click.echo(f"Updating '{plugin.name}' files in project...")
 
             updated_paths = self.update_files(project, paths_to_update)
             if not updated_paths:
-                print("Nothing to update")
+                click.echo("Nothing to update")
                 return
 
-            for path in updated_paths:
-                print(f"Updated {path}")
+            for update_path in updated_paths:
+                click.echo(f"Updated {update_path}")
         else:
-            print(
+            click.echo(
                 f"Run `meltano upgrade files` to update your project's '{plugin.name}' files."
             )

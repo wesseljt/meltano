@@ -18,7 +18,7 @@ from meltano.core.environment_service import EnvironmentService
 from meltano.core.job import Job, Payload, State
 from meltano.core.logging.job_logging_service import JobLoggingService
 from meltano.core.plugin import PluginType
-from meltano.core.plugin.settings_service import PluginSettingsService
+from meltano.core.plugin.plugin_settings_service import PluginSettingsService
 from meltano.core.plugin_discovery_service import (
     LockedDefinitionService,
     PluginDiscoveryService,

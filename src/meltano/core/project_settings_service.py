@@ -1,5 +1,6 @@
 """Project Settings Service."""
 
+import os
 from typing import List
 
 from dotenv import dotenv_values
@@ -38,26 +39,6 @@ class ProjectSettingsService(SettingsService):
         super().__init__(*args, **kwargs)
 
         self.config_service = config_service or ConfigService(self.project)
-
-        self.env_override = {
-            **self.project.env,
-            **self.env_override,
-        }
-
-        if self.project.active_environment:
-            # Update this with `self.project.dotenv_env`, `self.env`, etc. to expand
-            # other environment variables in the Environment's `env`.
-            expandable_env = {**self.project.env}
-            with self.feature_flag(
-                FeatureFlags.STRICT_ENV_VAR_MODE, raise_error=False
-            ) as strict_env_var_mode:
-                environment_env = {
-                    var: do_expand_env_vars(
-                        value, expandable_env, raise_if_missing=strict_env_var_mode
-                    )
-                    for var, value in self.project.active_environment.env.items()
-                }
-            self.env_override.update(environment_env)
 
         self.config_override = {  # noqa: WPS601
             **self.__class__.config_override,
@@ -133,9 +114,31 @@ class ProjectSettingsService(SettingsService):
 
         Returns:
             The environment variables at the project level, including os.environ,
-            env_overrides and the `env` key in `meltano.yml`.
+            env_override and the `env` key in `meltano.yml`.
         """
-        return {**super().env, **self.meltano_yml_config.get("env", {})}
+        project_level_env = {
+            **os.environ,
+            **self.project.env,
+            **self.meltano_yml_config.get("env", {}),
+            **self.env_override,
+        }
+
+        if self.project.active_environment:
+            # Update this with `self.project.dotenv_env`, `self.env`, etc. to expand
+            # other environment variables in the Environment's `env`.
+            expandable_env = {**project_level_env}
+            with self.feature_flag(
+                FeatureFlags.STRICT_ENV_VAR_MODE, raise_error=False
+            ) as strict_env_var_mode:
+                environment_env = {
+                    var: do_expand_env_vars(
+                        value, expandable_env, raise_if_missing=strict_env_var_mode
+                    )
+                    for var, value in self.project.active_environment.env.items()
+                }
+            project_level_env = {**project_level_env, **environment_env}
+
+        return project_level_env
 
     def update_meltano_yml_config(self, config):
         """Update configuration in `meltano.yml`.

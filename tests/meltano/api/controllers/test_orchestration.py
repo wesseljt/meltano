@@ -1,11 +1,15 @@
 import json
 
-import pytest
+import pytest  # noqa: F401
 from asynctest import CoroutineMock, mock
 from flask import Flask, url_for
 from flask.testing import FlaskClient
 from flask.wrappers import Response
-from meltano.core.plugin.settings_service import REDACTED_VALUE, SettingValueStore
+
+from meltano.core.plugin.plugin_settings_service import (
+    REDACTED_VALUE,
+    SettingValueStore,
+)
 
 
 class TestOrchestration:
@@ -44,19 +48,19 @@ class TestOrchestration:
                 "secure", session=session
             ) == ("thisisatest", SettingValueStore.DOTENV)
             assert config["secure"] == REDACTED_VALUE
-            assert config_metadata["secure"]["redacted"] == True
+            assert config_metadata["secure"]["redacted"] is True
             assert config_metadata["secure"]["source"] == "dotenv"
             assert config_metadata["secure"]["auto_store"] == "dotenv"
-            assert config_metadata["secure"]["overwritable"] == True
+            assert config_metadata["secure"]["overwritable"] is True
 
             # make sure that `boolean` cannot be overwritten
             assert plugin_settings_service.get_with_source(
                 "boolean", session=session
             ) == (False, SettingValueStore.ENV)
-            assert config["boolean"] == False
+            assert config["boolean"] is False
             assert config_metadata["boolean"]["source"] == "env"
             assert config_metadata["boolean"]["auto_store"] == "dotenv"
-            assert config_metadata["boolean"]["overwritable"] == False
+            assert config_metadata["boolean"]["overwritable"] is False
 
             # make sure the `hidden` setting is still present
             # but hidden in the response
@@ -70,7 +74,7 @@ class TestOrchestration:
             assert "_metadata" not in config
             assert "_schema" not in config
 
-            setting_names = [s["name"] for s in res.json["settings"]]
+            setting_names = [stg["name"] for stg in res.json["settings"]]
             assert "_select" not in setting_names
             assert "_metadata" not in setting_names
             assert "_schema" not in setting_names

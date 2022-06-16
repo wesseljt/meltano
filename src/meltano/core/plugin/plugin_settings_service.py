@@ -38,17 +38,9 @@ class PluginSettingsService(SettingsService):
         self.plugin = plugin
         self.plugins_service = plugins_service or ProjectPluginsService(self.project)
 
-        project_settings_service = ProjectSettingsService(
+        self.project_settings_service = ProjectSettingsService(
             self.project, config_service=self.plugins_service.config_service
         )
-
-        self.env_override = {
-            **project_settings_service.env,
-            **project_settings_service.as_env(),
-            **self.env_override,
-            **self.plugin.env,
-            **self.plugin.info_env,
-        }
 
         self._inherited_settings_service = None
         if self.project.active_environment:
@@ -59,6 +51,22 @@ class PluginSettingsService(SettingsService):
             )
         else:
             self.environment_plugin_config = None
+
+    @property
+    def env(self):
+        """Plugin-level environment variables.
+
+        Returns:
+            Plugin-level environment.
+        """
+        return {
+            **self.project_settings_service.env,
+            **self.project_settings_service.as_env(),
+            **self.plugin.env,  # plugin level setting env: map
+            **self.plugin.info_env,  # plugin settings as env map (e.g. MELTANO_EXTRACTOR_...)
+            # TODO: add plugin level environment env: config here
+            **self.env_override,
+        }
 
     @property
     def label(self):
@@ -77,22 +85,6 @@ class PluginSettingsService(SettingsService):
             The documentation URL for this plugin.
         """
         return self.plugin.docs
-
-    def setting_env_vars(self, setting_def: SettingDefinition, for_writing=False):
-        """Get environment variables for a setting.
-
-        Args:
-            setting_def: The setting definition.
-            for_writing: Whether to get environment variables for writing.
-
-        Returns:
-            Environment variables for a setting.
-        """
-        return setting_def.env_vars(
-            prefixes=self.plugin.env_prefixes(for_writing=for_writing),
-            include_custom=self.plugin.is_shadowing or for_writing,
-            for_writing=for_writing,
-        )
 
     @property
     def db_namespace(self):
@@ -140,24 +132,6 @@ class PluginSettingsService(SettingsService):
             return self.environment_plugin_config.config_with_extras
         return {}
 
-    def update_meltano_yml_config(self, config_with_extras):
-        """Update configuration in `meltano.yml`.
-
-        Args:
-            config_with_extras: Configuration to update.
-        """
-        self.plugin.config_with_extras = config_with_extras
-        self.plugins_service.update_plugin(self.plugin)
-
-    def update_meltano_environment_config(self, config_with_extras: Dict[str, Any]):
-        """Update environment configuration in `meltano.yml`.
-
-        Args:
-            config_with_extras: Configuration to update.
-        """
-        self.environment_plugin_config.config_with_extras = config_with_extras
-        self.plugins_service.update_environment_plugin(self.environment_plugin_config)
-
     @property
     def inherited_settings_service(self):
         """Return settings service to inherit configuration from.
@@ -177,6 +151,40 @@ class PluginSettingsService(SettingsService):
                 plugins_service=self.plugins_service,
             )
         return self._inherited_settings_service
+
+    def setting_env_vars(self, setting_def: SettingDefinition, for_writing=False):
+        """Get environment variables for a setting.
+
+        Args:
+            setting_def: The setting definition.
+            for_writing: Whether to get environment variables for writing.
+
+        Returns:
+            Environment variables for a setting.
+        """
+        return setting_def.env_vars(
+            prefixes=self.plugin.env_prefixes(for_writing=for_writing),
+            include_custom=self.plugin.is_shadowing or for_writing,
+            for_writing=for_writing,
+        )
+
+    def update_meltano_yml_config(self, config_with_extras):
+        """Update configuration in `meltano.yml`.
+
+        Args:
+            config_with_extras: Configuration to update.
+        """
+        self.plugin.config_with_extras = config_with_extras
+        self.plugins_service.update_plugin(self.plugin)
+
+    def update_meltano_environment_config(self, config_with_extras: Dict[str, Any]):
+        """Update environment configuration in `meltano.yml`.
+
+        Args:
+            config_with_extras: Configuration to update.
+        """
+        self.environment_plugin_config.config_with_extras = config_with_extras
+        self.plugins_service.update_environment_plugin(self.environment_plugin_config)
 
     def process_config(self, config):
         """Process configuration dictionary to be passed to plugin.

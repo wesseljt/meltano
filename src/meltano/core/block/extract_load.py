@@ -13,8 +13,8 @@ from meltano.core.job import Job, JobFinder
 from meltano.core.job.stale_job_failer import StaleJobFailer
 from meltano.core.logging import JobLoggingService, OutputLogger
 from meltano.core.plugin import PluginType
+from meltano.core.plugin.plugin_settings_service import PluginSettingsService
 from meltano.core.plugin.project_plugin import ProjectPlugin
-from meltano.core.plugin.settings_service import PluginSettingsService
 from meltano.core.plugin_invoker import PluginInvoker, invoker_factory
 from meltano.core.project import Project
 from meltano.core.project_plugins_service import ProjectPluginsService

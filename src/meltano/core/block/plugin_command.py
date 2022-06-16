@@ -9,8 +9,8 @@ from meltano.core.db import project_engine
 from meltano.core.elt_context import PluginContext
 from meltano.core.logging import OutputLogger
 from meltano.core.logging.utils import SubprocessOutputWriter
+from meltano.core.plugin.plugin_settings_service import PluginSettingsService
 from meltano.core.plugin.project_plugin import ProjectPlugin
-from meltano.core.plugin.settings_service import PluginSettingsService
 from meltano.core.plugin_invoker import PluginInvoker, invoker_factory
 from meltano.core.project import Project
 from meltano.core.project_plugins_service import ProjectPluginsService

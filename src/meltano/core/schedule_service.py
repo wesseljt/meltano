@@ -7,7 +7,7 @@ from typing import Dict, List, Optional
 
 from .meltano_invoker import MeltanoInvoker
 from .plugin import PluginType
-from .plugin.settings_service import PluginSettingsService, SettingMissingError
+from .plugin.plugin_settings_service import PluginSettingsService, SettingMissingError
 from .plugin_discovery_service import PluginNotFoundError
 from .project import Project
 from .project_plugins_service import ProjectPluginsService

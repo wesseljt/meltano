@@ -23,7 +23,7 @@ from meltano.core.logging import (
     SizeThresholdJobLogException,
 )
 from meltano.core.plugin import PluginRef
-from meltano.core.plugin.settings_service import PluginSettingsService
+from meltano.core.plugin.plugin_settings_service import PluginSettingsService
 from meltano.core.plugin_discovery_service import PluginNotFoundError
 from meltano.core.plugin_invoker import invoker_factory
 from meltano.core.plugin_test_service import PluginTestServiceFactory

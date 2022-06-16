@@ -86,7 +86,6 @@ _env_var_resolution_expectations = {
         {"TEST_ENV_VAR_RESOLUTION_FROM": "terminal_env"},
         _meltanofile_update_dict(),
         _terminal_env_var,
-        xfail=True,
     ),
     "Environment-level env (with terminal context)": EnvVarResolutionExpectation(
         {"TEST_ENV_VAR_RESOLUTION_FROM": "environment_level_env"},

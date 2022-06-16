@@ -41,7 +41,7 @@ class ProjectSettingsService(SettingsService):
 
         self.env_override = {
             **self.project.env,
-            **config_service.env,
+            **self.config_service.env,
             **self.env_override,
         }
 

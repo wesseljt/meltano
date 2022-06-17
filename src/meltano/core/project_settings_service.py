@@ -136,7 +136,7 @@ class ProjectSettingsService(SettingsService):
                     )
                     for var, value in self.project.active_environment.env.items()
                 }
-            project_level_env = {**project_level_env, **environment_env}
+            project_level_env.update(environment_env)
 
         return project_level_env
 

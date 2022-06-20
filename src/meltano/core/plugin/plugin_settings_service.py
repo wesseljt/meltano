@@ -63,7 +63,6 @@ class PluginSettingsService(SettingsService):
             **self.project_settings_service.env,
             **self.project_settings_service.as_env(),
             **self.plugin.env,  # plugin level setting env: map
-            **self.plugin.info_env,  # plugin settings as env map (e.g. MELTANO_EXTRACTOR_...)
             # TODO: add plugin level environment env: config here
             **self.env_override,
         }

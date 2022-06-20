@@ -119,20 +119,19 @@ class ProjectSettingsService(SettingsService):
         project_level_env = {
             **os.environ,
             **self.project.env,
-            **self.meltano_yml_config.get("env", {}),
+            **self.project.dotenv_env,
+            **self.config_service.env,
             **self.env_override,
         }
-
         if self.project.active_environment:
             # Update this with `self.project.dotenv_env`, `self.env`, etc. to expand
             # other environment variables in the Environment's `env`.
-            expandable_env = {**project_level_env}
             with self.feature_flag(
                 FeatureFlags.STRICT_ENV_VAR_MODE, raise_error=False
             ) as strict_env_var_mode:
                 environment_env = {
                     var: do_expand_env_vars(
-                        value, expandable_env, raise_if_missing=strict_env_var_mode
+                        value, project_level_env, raise_if_missing=strict_env_var_mode
                     )
                     for var, value in self.project.active_environment.env.items()
                 }

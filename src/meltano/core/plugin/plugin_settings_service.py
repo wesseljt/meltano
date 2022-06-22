@@ -53,21 +53,6 @@ class PluginSettingsService(SettingsService):
             self.environment_plugin_config = None
 
     @property
-    def env(self):
-        """Plugin-level environment variables.
-
-        Returns:
-            Plugin-level environment.
-        """
-        return {
-            **self.project_settings_service.env,
-            **self.project_settings_service.as_env(),
-            **self.plugin.env,  # plugin level setting env: map
-            # TODO: add plugin level environment env: config here
-            **self.env_override,
-        }
-
-    @property
     def label(self):
         """Get the label for this plugin.
 

@@ -8,7 +8,10 @@ import sys
 from typing import Any, Iterable
 
 from meltano.core.plugin.requirements import PluginRequirement
+from meltano.core.project import Project
+from meltano.core.project_settings_service import ProjectSettingsService
 from meltano.core.setting_definition import SettingDefinition
+from meltano.core.settings_service import FeatureFlags
 from meltano.core.utils import expand_env_vars, flatten, uniques_in
 
 from .base import PluginDefinition, PluginRef, PluginType, Variant
@@ -379,12 +382,18 @@ class ProjectPlugin(PluginRef):  # noqa: WPS230, WPS214 # too many attrs and met
         Returns:
             Expanded pip url string.
         """
-        return expand_env_vars(
-            self.pip_url,
-            {
-                "MELTANO__PYTHON_VERSION": f"{sys.version_info.major}.{sys.version_info.minor}"
-            },
-        )
+        project = Project.find()
+        project_settings_service = ProjectSettingsService(project)
+        with project_settings_service.feature_flag(
+            FeatureFlags.STRICT_ENV_VAR_MODE
+        ) as strict_env_var_mode:
+            return expand_env_vars(
+                self.pip_url,
+                {
+                    "MELTANO__PYTHON_VERSION": f"{sys.version_info.major}.{sys.version_info.minor}"
+                },
+                raise_if_missing=strict_env_var_mode,
+            )
 
     @property
     def venv_name(self) -> str:

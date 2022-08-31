@@ -387,7 +387,7 @@ class ProjectPlugin(PluginRef):  # noqa: WPS230, WPS214 # too many attrs and met
         """
         project_settings_service = get_project_settings_service()
         with project_settings_service.feature_flag(
-            FeatureFlags.STRICT_ENV_VAR_MODE
+            FeatureFlags.STRICT_ENV_VAR_MODE, raise_error=False
         ) as strict_env_var_mode:
             return expand_env_vars(
                 self.pip_url,

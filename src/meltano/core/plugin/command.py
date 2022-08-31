@@ -8,7 +8,6 @@ from typing import TypeVar
 from meltano.core.behavior.canonical import Canonical
 from meltano.core.container.container_spec import ContainerSpec
 from meltano.core.error import Error
-from meltano.core.settings_service import FeatureFlags
 from meltano.core.utils import expand_env_vars, get_project_settings_service
 
 TCommand = TypeVar("TCommand")
@@ -71,11 +70,13 @@ class Command(Canonical):
         Raises:
             UndefinedEnvVarError: if an env var argument is not set
         """
+        from meltano.core.settings_service import FeatureFlags
+
         project_settings_service = get_project_settings_service()
         expanded = []
         for arg in shlex.split(self.args):
             with project_settings_service.feature_flag(
-                FeatureFlags.STRICT_ENV_VAR_MODE
+                FeatureFlags.STRICT_ENV_VAR_MODE, raise_error=False
             ) as strict_env_var_mode:
                 value = expand_env_vars(arg, env, raise_if_missing=strict_env_var_mode)
                 if not value:

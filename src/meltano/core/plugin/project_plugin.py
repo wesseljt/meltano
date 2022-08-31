@@ -8,11 +8,14 @@ import sys
 from typing import Any, Iterable
 
 from meltano.core.plugin.requirements import PluginRequirement
-from meltano.core.project import Project
-from meltano.core.project_settings_service import ProjectSettingsService
 from meltano.core.setting_definition import SettingDefinition
 from meltano.core.settings_service import FeatureFlags
-from meltano.core.utils import expand_env_vars, flatten, uniques_in
+from meltano.core.utils import (
+    expand_env_vars,
+    flatten,
+    get_project_settings_service,
+    uniques_in,
+)
 
 from .base import PluginDefinition, PluginRef, PluginType, Variant
 from .command import Command
@@ -382,8 +385,7 @@ class ProjectPlugin(PluginRef):  # noqa: WPS230, WPS214 # too many attrs and met
         Returns:
             Expanded pip url string.
         """
-        project = Project.find()
-        project_settings_service = ProjectSettingsService(project)
+        project_settings_service = get_project_settings_service()
         with project_settings_service.feature_flag(
             FeatureFlags.STRICT_ENV_VAR_MODE
         ) as strict_env_var_mode:

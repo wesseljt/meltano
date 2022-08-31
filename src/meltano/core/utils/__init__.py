@@ -519,6 +519,18 @@ def hash_sha256(value: str | bytes) -> str:
     return hashlib.sha256(value).hexdigest()
 
 
+def get_project_settings_service():
+    """Get the current project.
+
+    Lazily imports Project and ProjectSettingsService to avoid circular import.
+    """
+    from meltano.core.project import Project
+    from meltano.core.project_settings_service import ProjectSettingsService
+
+    project = Project.find()
+    return ProjectSettingsService(project)
+
+
 def format_exception(exception: BaseException) -> str:
     """Get the exception with its traceback in the standard format it would have been printed with.
 

@@ -60,7 +60,7 @@ logger = structlog.getLogger(__name__)
 
 JSON_LOCATION_PATTERN = re.compile(r"\.|(\[\])")
 MANIFEST_SCHEMA_PATH = (
-    Path(package_root_path).parent / "schemas" / "meltano.schema.json"
+    Path(__file__).parent.parent.parent / "schemas" / "meltano.schema.json"
 )
 
 Trie: TypeAlias = t.Dict[str, "Trie"]  # type: ignore

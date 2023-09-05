@@ -476,7 +476,6 @@ tag_format = "v$major.$minor.$patch$prerelease"
 version = "3.0.0"
 version_files = [
   "pyproject.toml:^version =",
-  "src/meltano/__init__.py:^__version__ =",
   'docs/package.json:^  "version":',
 ]
 
